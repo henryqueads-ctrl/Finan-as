@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Finanças" />
+<title>Finanças</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f5;
+    --bg3: #eeeeec;
+    --text: #1a1a1a;
+    --text2: #6b6b68;
+    --text3: #9a9a97;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --success: #0f6e56;
+    --success-bg: #e1f5ee;
+    --danger: #a32d2d;
+    --danger-bg: #fcebeb;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1e;
+      --bg2: #2c2c2e;
+      --bg3: #3a3a3c;
+      --text: #f2f2f7;
+      --text2: #aeaeb2;
+      --text3: #636366;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.18);
+      --success: #5dcaa5;
+      --success-bg: #04342c;
+      --danger: #f09595;
+      --danger-bg: #501313;
+    }
+  }
+  html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; color: var(--text); overflow: hidden; }
+  #app { height: 100%; display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; }
+
+  /* SCREENS */
+  .screen { display: none; flex: 1; overflow-y: auto; padding: 16px 16px 0; }
+  .screen.active { display: block; }
+
+  /* HEADER */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-top: env(safe-area-inset-top, 12px); }
+  .page-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  /* MONTH NAV */
+  .month-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; }
+  .month-nav button { background: var(--bg2); border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .month-label { font-size: 16px; font-weight: 600; min-width: 140px; text-align: center; }
+
+  /* STAT CARDS */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .stat-card { background: var(--bg2); border-radius: var(--radius-lg); padding: 14px; }
+  .stat-card.full { grid-column: 1 / -1; }
+  .stat-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .stat-value { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .positive { color: var(--success); }
+  .negative { color: var(--danger); }
+
+  /* SECTION */
+  .section-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 10px; }
+
+  /* CARD BREAKDOWN */
+  .card-breakdown { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+  .card-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); }
+  .card-name { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 9px; }
+  .card-dot { width: 9px; height: 9px; border-radius: 50%; }
+  .card-total { font-size: 14px; font-weight: 600; color: var(--danger); }
+
+  /* TX LIST */
+  .tx-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 100px; }
+  .tx-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: background 0.15s; }
+  .tx-item:active { background: var(--bg2); }
+  .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .tx-info { flex: 1; min-width: 0; }
+  .tx-name { font-size: 15px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tx-meta { font-size: 12px; color: var(--text2); margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tag { font-size: 11px; padding: 2px 7px; border-radius: 20px; background: var(--bg3); color: var(--text2); }
+  .tx-right { text-align: right; flex-shrink: 0; }
+  .tx-amount { font-size: 15px; font-weight: 600; }
+  .tx-del { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text2); font-size: 14px; }
+  .empty-state i { font-size: 44px; display: block; margin-bottom: 10px; opacity: 0.35; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { display: flex; justify-content: space-around; align-items: center; padding: 10px 0; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 0.5px solid var(--border); background: var(--bg); flex-shrink: 0; }
+  .nav-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 20px; color: var(--text3); font-size: 10px; font-weight: 500; letter-spacing: 0.02em; }
+  .nav-btn.active { color: var(--text); }
+  .nav-btn i { font-size: 24px; }
+
+  /* FAB */
+  .fab { position: fixed; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: var(--bg); border: none; cursor: pointer; font-size: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,0,0,0.25); z-index: 100; }
+
+  /* FORM OVERLAY */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: flex-end; }
+  .overlay.open { display: flex; }
+  .sheet { background: var(--bg); border-radius: 20px 20px 0 0; padding: 20px 18px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 100%; max-height: 92vh; overflow-y: auto; }
+  .sheet-title { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+  .form-group input, .form-group select { width: 100%; padding: 12px 14px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--bg2); color: var(--text); font-size: 16px; outline: none; -webkit-appearance: none; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 0.5px solid var(--border2); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+  .type-btn { padding: 12px; text-align: center; cursor: pointer; font-size: 15px; font-weight: 500; border: none; background: var(--bg2); color: var(--text2); }
+  .type-btn.active { background: var(--text); color: var(--bg); }
+  .btn-primary { width: 100%; padding: 15px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius-lg); font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+  .btn-cancel { width: 100%; padding: 13px; background: none; color: var(--text2); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); font-size: 15px; cursor: pointer; margin-top: 8px; }
+
+  /* CARDS SCREEN */
+  .cards-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 40px; }
+  .card-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); }
+  .card-item .card-info { flex: 1; font-size: 15px; font-weight: 500; }
+  .del-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 20px; padding: 4px; }
+
+  /* ADD INCOME BTN */
+  .income-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--success-bg); color: var(--success); border: none; border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
+    <div class="page-header">
+      <div>
+        <h1>Finanças</h1>
+        <div class="header-sub" id="header-month"></div>
+      </div>
+      <button class="income-btn" onclick="openIncome()">
+        <i class="ti ti-plus" style="font-size:16px"></i> Entrada
+      </button>
+    </div>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
+      <span class="month-label" id="month-label"></span>
+      <button onclick="changeMonth(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-label">Entradas</div><div class="stat-value positive" id="total-income">R$ 0,00</div></div>
+      <div class="stat-card"><div class="stat-label">Saídas</div><div class="stat-value negative" id="total-expenses">R$ 0,00</div></div>
+      <div class="stat-card full"><div class="stat-label">Saldo do mês</div><div class="stat-value" id="saldo-mes">R$ 0,00</div></div>
+    </div>
+    <div class="section-title">Por cartão</div>
+    <div class="card-breakdown" id="card-breakdown"></div>
+    <div class="section-title">Lançamentos</div>
+    <div class="tx-list" id="tx-list"></div>
+  </div>
+
+  <!-- CARDS -->
+  <div id="screen-cards" class="screen">
+    <div class="page-header" style="justify-content:space-between">
+      <h1>Cartões</h1>
+      <button onclick="openCardForm()" style="background:var(--bg2);border:none;border-radius:var(--radius);padding:9px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px"><i class="ti ti-plus" style="font-size:16px"></i>Novo</button>
+    </div>
+    <div class="cards-list" id="cards-list"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="goHome()"><i class="ti ti-home"></i>Início</button>
+    <button class="nav-btn" id="nav-cards" onclick="goCards()"><i class="ti ti-credit-card"></i>Cartões</button>
+  </nav>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openExpense()" aria-label="Novo lançamento">
+  <i class="ti ti-plus"></i>
+</button>
+
+<!-- TX FORM -->
+<div class="overlay" id="tx-overlay">
+  <div class="sheet">
+    <div class="sheet-title" id="tx-form-title">Novo Lançamento</div>
+    <div class="type-toggle">
+      <button class="type-btn active" id="btn-exp" onclick="setType('expense')">Saída</button>
+      <button class="type-btn" id="btn-inc" onclick="setType('income')">Entrada</button>
+    </div>
+    <div class="form-group"><label>Estabelecimento / Descrição</label><input id="f-name" placeholder="Ex: iFood, Academia, Salário..." /></div>
+    <div class="form-group"><label>Valor (R$)</label><input id="f-value" type="number" inputmode="decimal" step="0.01" placeholder="0,00" /></div>
+    <div id="expense-fields">
+      <div class="form-group"><label>Cartão / Método</label><select id="f-card"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Parcela atual</label><input id="f-parc-atual" type="number" inputmode="numeric" min="1" value="1" /></div>
+        <div class="form-group"><label>Total parcelas</label><input id="f-parc-final" type="number" inputmode="numeric" min="1" value="1" /></div>
+      </div>
+    </div>
+    <div class="form-group"><label>Mês</label><input id="f-month" type="month" /></div>
+    <button class="btn-primary" onclick="saveTx()">Salvar</button>
+    <button class="btn-cancel" onclick="closeTxForm()">Cancelar</button>
+  </div>
+</div>
+
+<!-- CARD FORM -->
+<div class="overlay" id="card-overlay">
+  <div class="sheet">
+    <div class="sheet-title">Novo Cartão</div>
+    <div class="form-group"><label>Nome</label><input id="cf-name" placeholder="Ex: Nubank (Júlia)" /></div>
+    <div class="form-group"><label>Cor</label>
+      <select id="cf-color">
+        <option value="#7F77DD">Roxo</option>
+        <option value="#1D9E75">Verde</option>
+        <option value="#378ADD">Azul</option>
+        <option value="#D85A30">Laranja</option>
+        <option value="#D4537E">Rosa</option>
+        <option value="#888780">Cinza</option>
+        <option value="#BA7517">Amarelo</option>
+        <option value="#E24B4A">Vermelho</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveCard()">Salvar</button>
+    <button class="btn-cancel" onclick="closeCardForm()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+let currentMonth = new Date().toISOString().slice(0,7);
+let currentType = 'expense';
+
+function fmt(v) {
+  return 'R$ ' + Math.abs(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function monthLabel(k) {
+  const [y,m] = k.split('-');
+  return MONTHS[parseInt(m)-1] + ' ' + y;
+}
+
+function loadTx() { try { return JSON.parse(localStorage.getItem('fin_tx') || '[]'); } catch { return []; } }
+function saveTxData(d) { localStorage.setItem('fin_tx', JSON.stringify(d)); }
+function loadCards() {
+  try {
+    const c = JSON.parse(localStorage.getItem('fin_cards'));
+    return c && c.length ? c : defaultCards();
+  } catch { return defaultCards(); }
+}
+function saveCardsData(d) { localStorage.setItem('fin_cards', JSON.stringify(d)); }
+function defaultCards() {
+  return [
+    { id:'nubank-julia', name:'Nubank (Júlia)', color:'#7F77DD' },
+    { id:'inter-julia', name:'Inter (Júlia)', color:'#D85A30' },
+    { id:'cartao-pai', name:'Cartão (Pai)', color:'#1D9E75' },
+    { id:'dinheiro', name:'Dinheiro / Pix', color:'#888780' }
+  ];
+}
+
+function changeMonth(d) {
+  const [y,m] = currentMonth.split('-').map(Number);
+  const nd = new Date(y, m-1+d, 1);
+  currentMonth = nd.toISOString().slice(0,7);
+  render();
+}
+
+function render() {
+  const txs = loadTx();
+  const cards = loadCards();
+  document.getElementById('month-label').textContent = monthLabel(currentMonth);
+  document.getElementById('header-month').textContent = monthLabel(currentMonth);
+
+  const month = txs.filter(t => t.month === currentMonth);
+  const income = month.filter(t=>t.type==='income').reduce((a,b)=>a+b.value,0);
+  const expenses = month.filter(t=>t.type==='expense').reduce((a,b)=>a+b.value,0);
+  const saldo = income - expenses;
+
+  document.getElementById('total-income').textContent = fmt(income);
+  document.getElementById('total-expenses').textContent = fmt(expenses);
+  const sel = document.getElementById('saldo-mes');
+  sel.textContent = (saldo < 0 ? '-' : '') + fmt(saldo);
+  sel.className = 'stat-value ' + (saldo >= 0 ? 'positive' : 'negative');
+
+  const cardExp = {};
+  month.filter(t=>t.type==='expense').forEach(t=>{ cardExp[t.card]=(cardExp[t.card]||0)+t.value; });
+  const bd = document.getElementById('card-breakdown');
+  const used = cards.filter(c=>cardExp[c.id]>0);
+  bd.innerHTML = used.length ? used.map(c=>`<div class="card-row"><span class="card-name"><span class="card-dot" style="background:${c.color}"></span>${c.name}</span><span class="card-total">${fmt(cardExp[c.id])}</span></div>`).join('') : '<div style="font-size:13px;color:var(--text2);padding:6px 0">Nenhum gasto registrado ainda.</div>';
+
+  const sorted = [...month].sort((a,b)=>b.id-a.id);
+  const tl = document.getElementById('tx-list');
+  if(!sorted.length) {
+    tl.innerHTML = '<div class="empty-state"><i class="ti ti-receipt"></i>Nenhum lançamento nesse mês</div>';
+  } else {
+    tl.innerHTML = sorted.map(t=>{
+      const card = cards.find(c=>c.id===t.card);
+      const isInc = t.type==='income';
+      const parc = (!isInc && t.parcFinal>1) ? `<span class="tag">${t.parcAtual}/${t.parcFinal}</span>` : '';
+      const cardName = card && !isInc ? `<span>${card.name}</span>` : '';
+      return `<div class="tx-item" onclick="deleteTx(${t.id})">
+        <div class="tx-icon" style="background:${isInc?'var(--success-bg)':'var(--bg2)'}">
+          <i class="ti ${isInc?'ti-trending-up':'ti-shopping-cart'}" style="color:${isInc?'var(--success)':'var(--text2)'}"></i>
+        </div>
+        <div class="tx-info">
+          <div class="tx-name">${t.name}</div>
+          <div class="tx-meta">${cardName}${parc}</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount" style="color:${isInc?'var(--success)':'var(--danger)'}">${isInc?'+':'-'}${fmt(t.value)}</div>
+          <div class="tx-del"><i class="ti ti-trash" style="font-size:13px"></i></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const cl = document.getElementById('cards-list');
+  cl.innerHTML = loadCards().map(c=>`<div class="card-item"><span class="card-dot" style="background:${c.color};width:12px;height:12px"></span><span class="card-info">${c.name}</span><button class="del-btn" onclick="deleteCard('${c.id}')"><i class="ti ti-trash"></i></button></div>`).join('');
+}
+
+function setType(t) {
+  currentType = t;
+  document.getElementById('btn-exp').className = 'type-btn' + (t==='expense'?' active':'');
+  document.getElementById('btn-inc').className = 'type-btn' + (t==='income'?' active':'');
+  document.getElementById('expense-fields').style.display = t==='expense'?'block':'none';
+}
+
+function openExpense() {
+  setType('expense');
+  document.getElementById('f-name').value='';
+  document.getElementById('f-value').value='';
+  document.getElementById('f-parc-atual').value='1';
+  document.getElementById('f-parc-final').value='1';
+  document.getElementById('f-month').value=currentMonth;
+  const cards = loadCards();
+  document.getElementById('f-card').innerHTML = cards.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('tx-overlay').classList.add('open');
+}
+function openIncome() { openExpense(); setType('income'); }
+function closeTxForm() { document.getElementById('tx-overlay').classList.remove('open'); }
+
+function saveTx() {
+  const name = document.getElementById('f-name').value.trim();
+  const value = parseFloat(document.getElementById('f-value').value);
+  const month = document.getElementById('f-month').value;
+  if(!name || !value || !month) { alert('Preencha todos os campos!'); return; }
+  const txs = loadTx();
+  txs.push({
+    id: Date.now(), type: currentType, name, value, month,
+    card: currentType==='expense' ? document.getElementById('f-card').value : null,
+    parcAtual: currentType==='expense' ? parseInt(document.getElementById('f-parc-atual').value)||1 : 1,
+    parcFinal: currentType==='expense' ? parseInt(document.getElementById('f-parc-final').value)||1 : 1
+  });
+  saveTxData(txs);
+  closeTxForm();
+  render();
+}
+
+function deleteTx(id) {
+  if(!confirm('Excluir este lançamento?')) return;
+  saveTxData(loadTx().filter(t=>t.id!==id));
+  render();
+}
+
+function openCardForm() { document.getElementById('cf-name').value=''; document.getElementById('card-overlay').classList.add('open'); }
+function closeCardForm() { document.getElementById('card-overlay').classList.remove('open'); }
+function saveCard() {
+  const name = document.getElementById('cf-name').value.trim();
+  if(!name) return;
+  const cards = loadCards();
+  cards.push({ id:'card-'+Date.now(), name, color: document.getElementById('cf-color').value });
+  saveCardsData(cards);
+  closeCardForm();
+  render();
+}
+function deleteCard(id) {
+  if(!confirm('Excluir este cartão?')) return;
+  saveCardsData(loadCards().filter(c=>c.id!==id));
+  render();
+}
+
+function goHome() {
+  document.getElementById('screen-home').classList.add('active');
+  document.getElementById('screen-cards').classList.remove('active');
+  document.getElementById('nav-home').classList.add('active');
+  document.getElementById('nav-cards').classList.remove('active');
+  document.getElementById('fab').style.display='flex';
+}
+function goCards() {
+  document.getElementById('screen-cards').classList.add('active');
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('nav-cards').classList.add('active');
+  document.getElementById('nav-home').classList.remove('active');
+  document.getElementById('fab').style.display='none';
+}
+
+render();
+</script>
+</body>
+</html>
