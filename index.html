@@ -116,6 +116,21 @@ html, body {
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
+.card-row { cursor:pointer; }
+.card-row i { color:var(--text3); font-size:16px; }
+.card-detail-list { display:flex; flex-direction:column; gap:6px; margin:-4px 0 4px 20px; }
+.card-detail-item {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:9px 12px; background:var(--bg3); border:0.5px solid var(--border);
+  border-radius:var(--radius); font-size:13px;
+}
+.card-detail-name { color:var(--text); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.card-detail-value { color:var(--danger); font-weight:800; flex-shrink:0; font-variant-numeric:tabular-nums lining-nums; }
+.section-toggle {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  cursor:pointer; user-select:none;
+}
+.section-toggle i { font-size:17px; color:var(--text3); }
 
 /* TX LIST */
 .tx-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 100px; }
@@ -381,7 +396,7 @@ html, body {
     </div>
     <div class="section-title">Por cartão</div>
     <div class="card-breakdown" id="card-breakdown"></div>
-    <div class="section-title">Lançamentos</div>
+    <div class="section-title section-toggle" onclick="toggleTxList()"><span>Lançamentos</span><i class="ti ti-chevron-up" id="tx-list-toggle-icon"></i></div>
     <div class="tx-list" id="tx-list"></div>
   </div>
 
@@ -732,6 +747,8 @@ let editingTxId = null;
 let editingInvestmentId = null;
 let editingCardId = null;
 let projectionMonths = 6;
+let expandedCardId = null;
+let txListCollapsed = false;
 
 function fmt(v) {
   return 'R$ ' + Math.abs(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
@@ -837,6 +854,15 @@ function changeMonth(d) {
   const [y,m] = currentMonth.split('-').map(Number);
   const nd = new Date(y, m-1+d, 1);
   currentMonth = nd.toISOString().slice(0,7);
+  expandedCardId = null;
+  render();
+}
+function toggleCardDetails(id) {
+  expandedCardId = expandedCardId===id ? null : id;
+  render();
+}
+function toggleTxList() {
+  txListCollapsed = !txListCollapsed;
   render();
 }
 function getExpensesForMonth(txs, monthKey) {
@@ -905,10 +931,18 @@ function render() {
   month.filter(t=>t.type==='expense').forEach(t=>{ cardExp[t.card]=(cardExp[t.card]||0)+t.value; });
   const bd = document.getElementById('card-breakdown');
   const used = cards.filter(c=>cardExp[c.id]>0);
-  bd.innerHTML = used.length ? used.map(c=>`<div class="card-row"><span class="card-name"><span class="card-dot" style="background:${c.color}"></span>${c.name}</span><span class="card-total">${fmt(cardExp[c.id])}</span></div>`).join('') : '<div style="font-size:13px;color:var(--text3);padding:6px 0">Nenhum gasto registrado ainda.</div>';
+  bd.innerHTML = used.length ? used.map(c=>{
+    const opened = expandedCardId===c.id;
+    const cardItems = month.filter(t=>t.type==='expense' && t.card===c.id).sort((a,b)=>b.id-a.id);
+    const details = opened ? `<div class="card-detail-list">${cardItems.map(t=>`<div class="card-detail-item"><span class="card-detail-name">${t.name}${t.parcFinal>1?` (${t.parcAtual}/${t.parcFinal})`:''}${t.fixo?' (Fixo)':''}</span><span class="card-detail-value">${fmt(t.value)}</span></div>`).join('')}</div>` : '';
+    return `<div class="card-row" onclick="toggleCardDetails('${c.id}')"><span class="card-name"><span class="card-dot" style="background:${c.color}"></span>${c.name}</span><span style="display:flex;align-items:center;gap:8px"><span class="card-total">${fmt(cardExp[c.id])}</span><i class="ti ${opened?'ti-chevron-up':'ti-chevron-down'}"></i></span></div>${details}`;
+  }).join('') : '<div style="font-size:13px;color:var(--text3);padding:6px 0">Nenhum gasto registrado ainda.</div>';
   const sorted = [...month].sort((a,b)=>b.id-a.id);
   const tl = document.getElementById('tx-list');
-  if(!sorted.length) {
+  document.getElementById('tx-list-toggle-icon').className = 'ti ' + (txListCollapsed ? 'ti-chevron-down' : 'ti-chevron-up');
+  if(txListCollapsed) {
+    tl.innerHTML = '';
+  } else if(!sorted.length) {
     tl.innerHTML = '<div class="empty-state"><i class="ti ti-receipt"></i>Nenhum lançamento nesse mês</div>';
   } else {
     tl.innerHTML = sorted.map(t=>{
