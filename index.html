@@ -161,7 +161,7 @@ html, body {
 .nav-btn {
   background: none; border: none; cursor: pointer;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 4px 24px; color: var(--text3); font-size: 10px; font-weight: 600; letter-spacing: 0.03em;
+  padding: 4px 8px; color: var(--text3); font-size: 10px; font-weight: 600; letter-spacing: 0.03em;
 }
 .nav-btn.active { color: var(--text); }
 .nav-btn.active i { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -204,6 +204,13 @@ html, body {
 }
 .form-group input:focus, .form-group select:focus { border-color: var(--g1); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card-due-preview {
+  display:none; margin-top:8px; padding:10px 12px; border-radius:var(--radius);
+  border:0.5px solid var(--border2); font-size:13px; font-weight:700;
+}
+.card-due-preview.positive { display:block; color:var(--success); background:var(--success-bg); }
+.card-due-preview.negative { display:block; color:var(--danger); background:var(--danger-bg); }
+.card-due-preview.neutral { display:block; color:var(--text2); background:var(--bg3); }
 
 /* TYPE TOGGLE */
 .type-toggle { display: grid; grid-template-columns: 1fr 1fr; border: 0.5px solid var(--border2); border-radius: var(--radius); overflow: hidden; margin-bottom: 18px; }
@@ -245,7 +252,57 @@ html, body {
   border-radius: var(--radius-lg); margin-bottom: 10px;
 }
 .card-item-info { flex: 1; font-size: 15px; font-weight: 600; }
+.card-item-meta { display:block; font-size:12px; color:var(--text2); font-weight:400; margin-top:3px; }
 .del-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 20px; padding: 4px; opacity: 0.7; }
+
+/* INVESTMENTS */
+.investment-list { display:flex; flex-direction:column; gap:10px; padding-bottom:100px; }
+.investment-item {
+  display:flex; align-items:center; gap:12px; padding:14px;
+  background:var(--bg2); border:0.5px solid var(--border);
+  border-radius:var(--radius-lg); cursor:pointer;
+}
+.investment-icon {
+  width:42px; height:42px; border-radius:12px; display:flex;
+  align-items:center; justify-content:center; flex-shrink:0;
+  background:var(--success-bg); color:var(--success); font-size:19px;
+}
+.investment-info { flex:1; min-width:0; }
+.investment-name { font-size:15px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.investment-meta { font-size:12px; color:var(--text2); margin-top:3px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.investment-values { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+.investment-current { font-size:15px; font-weight:800; color:var(--text); font-variant-numeric:tabular-nums lining-nums; }
+.investment-yield { font-size:12px; font-weight:700; font-variant-numeric:tabular-nums lining-nums; }
+.investment-actions { display:flex; align-items:center; gap:8px; }
+.investment-action {
+  border:0; background:none; color:var(--text3); cursor:pointer;
+  width:24px; height:24px; display:flex; align-items:center; justify-content:center;
+  border-radius:50%; font-size:14px;
+}
+.investment-action:active { background:var(--bg3); color:var(--text); }
+
+/* PROJECTION */
+.projection-controls { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px; }
+.projection-btn {
+  padding:11px 8px; border:0.5px solid var(--border2); border-radius:var(--radius);
+  background:var(--bg3); color:var(--text2); font-size:13px; font-weight:800; cursor:pointer;
+}
+.projection-btn.active { background:var(--grad); color:#fff; border-color:transparent; }
+.projection-list { display:flex; flex-direction:column; gap:10px; padding-bottom:100px; }
+.projection-item {
+  background:var(--bg2); border:0.5px solid var(--border); border-radius:var(--radius-lg);
+  padding:14px; display:flex; flex-direction:column; gap:10px;
+}
+.projection-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.projection-month { font-size:15px; font-weight:800; color:var(--text); }
+.projection-total { font-size:17px; font-weight:900; color:var(--danger); font-variant-numeric:tabular-nums lining-nums; }
+.projection-breakdown { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+.projection-chip {
+  background:var(--bg3); border:0.5px solid var(--border2); border-radius:var(--radius);
+  padding:8px; min-width:0;
+}
+.projection-chip span { display:block; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text3); font-weight:800; margin-bottom:4px; }
+.projection-chip strong { display:block; font-size:12px; color:var(--text); font-variant-numeric:tabular-nums lining-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* SIDE MENU */
 .menu-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:none; backdrop-filter:blur(4px); }
@@ -337,10 +394,45 @@ html, body {
     <div id="cards-list"></div>
   </div>
 
+  <!-- INVESTMENTS -->
+  <div id="screen-investments" class="screen">
+    <div class="page-header">
+      <h1><span class="grad-text">Investimentos</span></h1>
+      <button class="btn-outline" onclick="openInvestmentForm()"><i class="ti ti-plus" style="font-size:16px"></i>Novo</button>
+    </div>
+    <div class="summary-grid">
+      <div class="stat-card"><div class="stat-label">Aplicado</div><div class="stat-value" id="inv-applied">R$ 0,00</div></div>
+      <div class="stat-card"><div class="stat-label">Atual</div><div class="stat-value positive" id="inv-current">R$ 0,00</div></div>
+      <div class="stat-card full"><div class="stat-label">Rendimento</div><div class="stat-value" id="inv-yield">R$ 0,00</div></div>
+    </div>
+    <div class="section-title">Carteira</div>
+    <div class="investment-list" id="investments-list"></div>
+  </div>
+
+  <!-- PROJECTION -->
+  <div id="screen-projection" class="screen">
+    <div class="page-header">
+      <h1><span class="grad-text">Projeção</span></h1>
+    </div>
+    <div class="projection-controls">
+      <button class="projection-btn" id="proj-3" onclick="setProjectionMonths(3)">3 meses</button>
+      <button class="projection-btn active" id="proj-6" onclick="setProjectionMonths(6)">6 meses</button>
+      <button class="projection-btn" id="proj-12" onclick="setProjectionMonths(12)">12 meses</button>
+    </div>
+    <div class="form-group"><label>Período personalizado</label><input id="projection-months" type="number" inputmode="numeric" min="1" max="36" value="6" onchange="setProjectionMonths(this.value)" /></div>
+    <div class="summary-grid">
+      <div class="stat-card full"><div class="stat-label">Total projetado</div><div class="stat-value negative" id="projection-total">R$ 0,00</div></div>
+    </div>
+    <div class="section-title">Próximos meses</div>
+    <div class="projection-list" id="projection-list"></div>
+  </div>
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <button class="nav-btn active" id="nav-home" onclick="goHome()"><i class="ti ti-home"></i>Início</button>
     <button class="nav-btn" id="nav-cards" onclick="goCards()"><i class="ti ti-credit-card"></i>Cartões</button>
+    <button class="nav-btn" id="nav-investments" onclick="goInvestments()"><i class="ti ti-chart-line"></i>Invest.</button>
+    <button class="nav-btn" id="nav-projection" onclick="goProjection()"><i class="ti ti-calendar-stats"></i>Projeção</button>
   </nav>
 </div>
 
@@ -361,7 +453,7 @@ html, body {
     <div class="form-group"><label>Estabelecimento / Descrição</label><input id="f-name" placeholder="Ex: iFood, Academia, Salário..." /></div>
     <div class="form-group"><label>Valor (R$)</label><input id="f-value" type="number" inputmode="decimal" step="0.01" placeholder="0,00" /></div>
     <div id="expense-fields">
-      <div class="form-group"><label>Cartão / Método</label><select id="f-card"></select></div>
+      <div class="form-group"><label>Cartão / Método</label><select id="f-card" onchange="updateCardDuePreview()"></select><div id="card-due-preview" class="card-due-preview"></div></div>
       <div class="type-toggle" style="margin-bottom:14px">
         <button class="type-btn active" id="btn-parcelado" onclick="setParcelType('parcelado')">Parcelado</button>
         <button class="type-btn" id="btn-fixo" onclick="setParcelType('fixo')">Fixo 🔁</button>
@@ -374,7 +466,7 @@ html, body {
         🔁 Este gasto vai aparecer automaticamente em todos os meses até você excluí-lo.
       </div>
     </div>
-    <div class="form-group"><label>Mês</label><input id="f-month" type="month" /></div>
+    <div class="form-group"><label>Mês</label><input id="f-month" type="month" onchange="updateCardDuePreview()" /></div>
     <button class="btn-primary" id="tx-save-btn" onclick="saveTx()">Salvar</button>
     <button class="btn-cancel" onclick="closeTxForm()">Cancelar</button>
   </div>
@@ -384,21 +476,48 @@ html, body {
 <div class="overlay" id="card-overlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Novo Cartão</div>
+    <div class="sheet-title" id="card-form-title">Novo método</div>
     <div class="form-group"><label>Nome</label><input id="cf-name" placeholder="Ex: Nubank (Júlia)" /></div>
-    <div class="form-group"><label>Cor</label>
-      <select id="cf-color">
-        <option value="#c044f0">Roxo</option>
-        <option value="#00d4ff">Ciano</option>
-        <option value="#5b4cf5">Azul</option>
-        <option value="#f05080">Rosa</option>
-        <option value="#00d4aa">Verde</option>
-        <option value="#f5a623">Laranja</option>
-        <option value="#888780">Cinza</option>
+    <div class="form-group"><label>Tipo</label>
+      <select id="cf-kind" onchange="toggleCardDueField()">
+        <option value="credit">Cartão</option>
+        <option value="cash">Dinheiro / Pix</option>
       </select>
     </div>
-    <button class="btn-primary" onclick="saveCard()">Salvar Cartão</button>
+    <div class="form-group" id="cf-due-group"><label>Dia de virada da fatura</label><input id="cf-due-day" type="number" inputmode="numeric" min="1" max="31" placeholder="Ex: 1" /></div>
+    <div class="form-group"><label>Cor</label><input id="cf-color" type="color" value="#c044f0" /></div>
+    <button class="btn-primary" id="card-save-btn" onclick="saveCard()">Salvar</button>
     <button class="btn-cancel" onclick="closeCardForm()">Cancelar</button>
+  </div>
+</div>
+
+<!-- INVESTMENT FORM -->
+<div class="overlay" id="investment-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="investment-form-title">Novo Investimento</div>
+    <div class="form-group"><label>Nome</label><input id="if-name" placeholder="Ex: Caixinha Nubank, Tesouro Selic, CDB..." /></div>
+    <div class="form-group"><label>Tipo</label>
+      <select id="if-kind" onchange="updateInvestmentFields()">
+        <option value="cdi">CDI</option>
+        <option value="selic">Tesouro Selic</option>
+        <option value="prefixado">Prefixado</option>
+        <option value="ipca">IPCA+</option>
+        <option value="poupanca">Poupança</option>
+        <option value="manual">Manual</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Valor aplicado</label><input id="if-applied" type="number" inputmode="decimal" step="0.01" placeholder="0,00" /></div>
+      <div class="form-group"><label>Data</label><input id="if-date" type="date" /></div>
+    </div>
+    <div class="form-row" id="investment-rate-fields">
+      <div class="form-group"><label id="if-index-label">% do CDI</label><input id="if-index" type="number" inputmode="decimal" step="0.01" value="100" /></div>
+      <div class="form-group"><label id="if-rate-label">CDI ao ano (%)</label><input id="if-rate" type="number" inputmode="decimal" step="0.01" value="14.40" /></div>
+    </div>
+    <div class="form-group" id="investment-manual-current" style="display:none"><label>Valor atual</label><input id="if-current" type="number" inputmode="decimal" step="0.01" placeholder="0,00" /></div>
+    <button class="btn-primary" id="investment-save-btn" onclick="saveInvestment()">Salvar</button>
+    <button class="btn-cancel" onclick="closeInvestmentForm()">Cancelar</button>
   </div>
 </div>
 
@@ -565,7 +684,7 @@ function resetTheme() {
   setThemeInputs(DEFAULT_THEME);
 }
 function exportBackup() {
-  const data = { txs: loadTx(), cards: loadCards(), theme: loadTheme(), exportedAt: new Date().toISOString() };
+  const data = { txs: loadTx(), cards: loadCards(), investments: loadInvestments(), theme: loadTheme(), exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -586,6 +705,7 @@ function importBackup(e) {
       if(!confirm('Isso vai substituir todos os dados atuais. Continuar?')) return;
       saveTxData(data.txs);
       saveCardsData(data.cards);
+      saveInvestmentsData(data.investments || []);
       if(data.theme) {
         saveTheme({ ...DEFAULT_THEME, ...data.theme });
         applyTheme(loadTheme());
@@ -609,6 +729,9 @@ const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','A
 let currentMonth = new Date().toISOString().slice(0,7);
 let currentType = 'expense';
 let editingTxId = null;
+let editingInvestmentId = null;
+let editingCardId = null;
+let projectionMonths = 6;
 
 function fmt(v) {
   return 'R$ ' + Math.abs(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
@@ -617,19 +740,97 @@ function monthLabel(k) {
   const [y,m] = k.split('-');
   return MONTHS[parseInt(m)-1] + ' ' + y;
 }
+function addMonths(monthKey, offset) {
+  const [y,m] = monthKey.split('-').map(Number);
+  const d = new Date(y, m-1+offset, 1);
+  return d.toISOString().slice(0,7);
+}
+function statementMonthForCard(monthKey, cardId) {
+  const card = loadCards().find(c=>c.id===cardId);
+  if(!card || card.kind!=='credit' || !card.dueDay) return monthKey;
+  const today = new Date();
+  const inputMonth = monthKey || currentMonth;
+  const [y,m] = inputMonth.split('-').map(Number);
+  const turnDate = card.dueDay===1 ? new Date(y, m, 1) : new Date(y, m-1, card.dueDay);
+  const purchaseDate = today.toISOString().slice(0,7)===inputMonth ? today : new Date(y, m-1, 1);
+  return purchaseDate >= turnDate ? addMonths(inputMonth, 1) : inputMonth;
+}
+function purchaseMonthFromStatement(monthKey, cardId) {
+  const card = loadCards().find(c=>c.id===cardId);
+  if(!card || card.kind!=='credit' || !card.dueDay) return monthKey;
+  const today = new Date();
+  const currentKey = today.toISOString().slice(0,7);
+  if(monthKey===statementMonthForCard(currentKey, cardId)) return currentKey;
+  return monthKey;
+}
 function loadTx() { try { return JSON.parse(localStorage.getItem('fin_tx')||'[]'); } catch { return []; } }
 function saveTxData(d) { localStorage.setItem('fin_tx', JSON.stringify(d)); }
+function loadInvestments() { try { return JSON.parse(localStorage.getItem('fin_investments')||'[]'); } catch { return []; } }
+function saveInvestmentsData(d) { localStorage.setItem('fin_investments', JSON.stringify(d)); }
+const INVESTMENT_DEFAULTS = {
+  cdi: { label:'CDI', index:100, rate:14.40 },
+  selic: { label:'Tesouro Selic', index:100, rate:14.50 },
+  prefixado: { label:'Prefixado', index:0, rate:12.00 },
+  ipca: { label:'IPCA+', index:3.90, rate:6.00 },
+  poupanca: { label:'Poupança', index:0, rate:6.17 },
+  manual: { label:'Manual', index:0, rate:0 }
+};
+function normalizeInvestment(inv) {
+  if(!inv) return null;
+  if(inv.kind) return inv;
+  const type = (inv.type || '').toLowerCase();
+  const pct = parseFloat((type.match(/(\d+(?:[,.]\d+)?)/) || [])[1]?.replace(',','.')) || 100;
+  if(type.includes('cdi')) return { ...inv, kind:'cdi', index:pct, rate:14.40 };
+  if(type.includes('selic')) return { ...inv, kind:'selic', index:pct, rate:14.50 };
+  if(type.includes('ipca')) return { ...inv, kind:'ipca', index:3.90, rate:pct===100?6:pct };
+  return { ...inv, kind:'manual', index:0, rate:0 };
+}
+function investmentAnnualRate(inv) {
+  inv = normalizeInvestment(inv);
+  const kind = inv.kind || 'manual';
+  const rate = parseFloat(inv.rate) || 0;
+  const index = parseFloat(inv.index) || 0;
+  if(kind==='cdi' || kind==='selic') return rate * index / 100;
+  if(kind==='ipca') return ((1 + index/100) * (1 + rate/100) - 1) * 100;
+  if(kind==='manual') return 0;
+  return rate;
+}
+function investmentCurrentValue(inv) {
+  inv = normalizeInvestment(inv);
+  if((inv.kind || 'manual')==='manual') return parseFloat(inv.current) || parseFloat(inv.applied) || 0;
+  const applied = parseFloat(inv.applied) || 0;
+  const date = inv.date ? new Date(inv.date + 'T00:00:00') : new Date();
+  const days = Math.max(0, Math.floor((new Date() - date) / 86400000));
+  return applied * Math.pow(1 + investmentAnnualRate(inv) / 100, days / 365);
+}
+function investmentTypeLabel(inv) {
+  inv = normalizeInvestment(inv);
+  const kind = inv.kind || 'manual';
+  const base = INVESTMENT_DEFAULTS[kind]?.label || inv.type || 'Investimento';
+  if(kind==='cdi') return `${base} ${fmtPercent(inv.index || 100)}`;
+  if(kind==='selic') return `${base} ${fmtPercent(inv.index || 100)}`;
+  if(kind==='prefixado' || kind==='poupanca') return `${base} ${fmtPercent(inv.rate || 0)} a.a.`;
+  if(kind==='ipca') return `IPCA ${fmtPercent(inv.index || 0)} + ${fmtPercent(inv.rate || 0)} a.a.`;
+  return inv.type || base;
+}
+function fmtPercent(v) {
+  return (parseFloat(v) || 0).toFixed(2).replace('.',',').replace(',00','') + '%';
+}
 function loadCards() {
-  try { const c = JSON.parse(localStorage.getItem('fin_cards')); return c&&c.length?c:defaultCards(); }
+  try { const c = JSON.parse(localStorage.getItem('fin_cards')); return (c&&c.length?c:defaultCards()).map(normalizeCard); }
   catch { return defaultCards(); }
 }
 function saveCardsData(d) { localStorage.setItem('fin_cards', JSON.stringify(d)); }
+function normalizeCard(c) {
+  const isCash = c.id==='dinheiro' || /dinheiro|pix/i.test(c.name || '');
+  return { kind: isCash ? 'cash' : 'credit', dueDay: null, ...c };
+}
 function defaultCards() {
   return [
-    { id:'nubank-julia', name:'Nubank (Júlia)', color:'#c044f0' },
-    { id:'inter-julia', name:'Inter (Júlia)', color:'#f05080' },
-    { id:'cartao-pai', name:'Cartão (Pai)', color:'#00d4aa' },
-    { id:'dinheiro', name:'Dinheiro / Pix', color:'#888780' }
+    { id:'nubank-julia', name:'Nubank (Júlia)', color:'#c044f0', kind:'credit', dueDay:null },
+    { id:'inter-julia', name:'Inter (Júlia)', color:'#f05080', kind:'credit', dueDay:null },
+    { id:'cartao-pai', name:'Cartão (Pai)', color:'#00d4aa', kind:'credit', dueDay:null },
+    { id:'dinheiro', name:'Dinheiro / Pix', color:'#888780', kind:'cash', dueDay:null }
   ];
 }
 function changeMonth(d) {
@@ -637,6 +838,53 @@ function changeMonth(d) {
   const nd = new Date(y, m-1+d, 1);
   currentMonth = nd.toISOString().slice(0,7);
   render();
+}
+function getExpensesForMonth(txs, monthKey) {
+  const direct = txs.filter(t=>t.type==='expense' && t.month===monthKey && !t.fixo);
+  const fixed = txs.filter(t=>t.type==='expense' && t.fixo && t.month<=monthKey);
+  return [...direct, ...fixed];
+}
+function renderProjection(txs, cards) {
+  const count = Math.max(1, Math.min(36, parseInt(projectionMonths)||6));
+  projectionMonths = count;
+  const input = document.getElementById('projection-months');
+  if(input) input.value = count;
+  [3,6,12].forEach(n=>{
+    const btn = document.getElementById('proj-'+n);
+    if(btn) btn.className = 'projection-btn' + (count===n ? ' active' : '');
+  });
+  const months = Array.from({length:count}, (_,i)=>addMonths(currentMonth, i));
+  const list = document.getElementById('projection-list');
+  let grandTotal = 0;
+  list.innerHTML = months.map(monthKey=>{
+    const expenses = getExpensesForMonth(txs, monthKey);
+    const fixed = expenses.filter(t=>t.fixo).reduce((a,b)=>a+b.value,0);
+    const installments = expenses.filter(t=>!t.fixo && t.parcFinal>1).reduce((a,b)=>a+b.value,0);
+    const other = expenses.filter(t=>!t.fixo && !(t.parcFinal>1)).reduce((a,b)=>a+b.value,0);
+    const total = fixed + installments + other;
+    grandTotal += total;
+    const byCard = {};
+    expenses.forEach(t=>{ byCard[t.card || 'outros'] = (byCard[t.card || 'outros'] || 0) + t.value; });
+    const cardSummary = Object.entries(byCard).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([id,total])=>{
+      const card = cards.find(c=>c.id===id);
+      return `${card ? card.name : 'Outros'} ${fmt(total)}`;
+    }).join(' • ');
+    return `<div class="projection-item">
+      <div class="projection-head">
+        <div>
+          <div class="projection-month">${monthLabel(monthKey)}</div>
+          <div class="tx-meta">${cardSummary || 'Nenhum compromisso'}</div>
+        </div>
+        <div class="projection-total">${fmt(total)}</div>
+      </div>
+      <div class="projection-breakdown">
+        <div class="projection-chip"><span>Parcelas</span><strong>${fmt(installments)}</strong></div>
+        <div class="projection-chip"><span>Fixos</span><strong>${fmt(fixed)}</strong></div>
+        <div class="projection-chip"><span>Outros</span><strong>${fmt(other)}</strong></div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('projection-total').textContent = fmt(grandTotal);
 }
 function render() {
   const txs = loadTx(); const cards = loadCards();
@@ -689,13 +937,54 @@ function render() {
     }).join('');
   }
   const cl = document.getElementById('cards-list');
-  cl.innerHTML = loadCards().map(c=>`<div class="card-item"><span class="card-dot" style="background:${c.color};width:12px;height:12px;flex-shrink:0"></span><span class="card-item-info">${c.name}</span><button class="del-btn" onclick="deleteCard('${c.id}')"><i class="ti ti-trash"></i></button></div>`).join('');
+  cl.innerHTML = loadCards().map(c=>{
+    const meta = c.kind==='credit' ? `Cartão${c.dueDay ? ` • vira dia ${c.dueDay}` : ' • virada pendente'}` : 'Dinheiro / Pix';
+    return `<div class="card-item" onclick="openEditCard('${c.id}')"><span class="card-dot" style="background:${c.color};width:12px;height:12px;flex-shrink:0"></span><span class="card-item-info">${c.name}<span class="card-item-meta">${meta}</span></span><button class="del-btn" onclick="event.stopPropagation(); deleteCard('${c.id}')"><i class="ti ti-trash"></i></button></div>`;
+  }).join('');
+
+  const investments = loadInvestments();
+  const totalApplied = investments.reduce((a,b)=>a+(parseFloat(b.applied)||0),0);
+  const totalCurrent = investments.reduce((a,b)=>a+investmentCurrentValue(b),0);
+  const totalYield = totalCurrent - totalApplied;
+  document.getElementById('inv-applied').textContent = fmt(totalApplied);
+  document.getElementById('inv-current').textContent = fmt(totalCurrent);
+  const invYield = document.getElementById('inv-yield');
+  invYield.textContent = (totalYield<0?'-':'') + fmt(totalYield);
+  invYield.className = 'stat-value ' + (totalYield>=0?'positive':'negative');
+  const il = document.getElementById('investments-list');
+  if(!investments.length) {
+    il.innerHTML = '<div class="empty-state"><i class="ti ti-chart-line"></i>Nenhum investimento cadastrado</div>';
+  } else {
+    il.innerHTML = [...investments].sort((a,b)=>b.id-a.id).map(inv=>{
+      const currentValue = investmentCurrentValue(inv);
+      const profit = currentValue - inv.applied;
+      const pct = inv.applied ? (profit / inv.applied * 100) : 0;
+      const cls = profit>=0 ? 'positive' : 'negative';
+      return `<div class="investment-item" onclick="openEditInvestment(${inv.id})">
+        <div class="investment-icon"><i class="ti ti-chart-candle"></i></div>
+        <div class="investment-info">
+          <div class="investment-name">${inv.name}</div>
+          <div class="investment-meta"><span>${investmentTypeLabel(inv)}</span><span class="tag">${inv.date || 'Sem data'}</span></div>
+        </div>
+        <div class="investment-values">
+          <div class="investment-current">${fmt(currentValue)}</div>
+          <div class="investment-yield ${cls}">${profit<0?'-':'+'}${fmt(profit)} (${pct.toFixed(1).replace('.',',')}%)</div>
+          <div class="investment-actions">
+            <button class="investment-action" onclick="event.stopPropagation(); openEditInvestment(${inv.id})" aria-label="Editar investimento"><i class="ti ti-pencil"></i></button>
+            <button class="investment-action" onclick="event.stopPropagation(); deleteInvestment(${inv.id})" aria-label="Excluir investimento"><i class="ti ti-trash"></i></button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  renderProjection(txs, cards);
 }
 function setType(t) {
   currentType = t;
   document.getElementById('btn-exp').className = 'type-btn'+(t==='expense'?' active':'');
   document.getElementById('btn-inc').className = 'type-btn'+(t==='income'?' active':'');
   document.getElementById('expense-fields').style.display = t==='expense'?'block':'none';
+  updateCardDuePreview();
 }
 function setParcelType(t) {
   document.getElementById('btn-parcelado').className = 'type-btn'+(t==='parcelado'?' active':'');
@@ -708,6 +997,35 @@ function fillCardOptions(selectedId) {
   const select = document.getElementById('f-card');
   select.innerHTML = cards.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
   if(selectedId && cards.some(c=>c.id===selectedId)) select.value = selectedId;
+  updateCardDuePreview();
+}
+function updateCardDuePreview() {
+  const preview = document.getElementById('card-due-preview');
+  if(!preview) return;
+  if(currentType!=='expense') {
+    preview.className = 'card-due-preview';
+    preview.textContent = '';
+    return;
+  }
+  const cardId = document.getElementById('f-card')?.value;
+  const month = document.getElementById('f-month')?.value || currentMonth;
+  const card = loadCards().find(c=>c.id===cardId);
+  if(!card) {
+    preview.className = 'card-due-preview';
+    preview.textContent = '';
+    return;
+  }
+  if(card.kind!=='credit' || !card.dueDay) {
+    preview.className = 'card-due-preview neutral';
+    preview.textContent = 'Dinheiro/Pix: cai no mês selecionado.';
+    return;
+  }
+  const statementMonth = statementMonthForCard(month, card.id);
+  const nextMonth = statementMonth !== month;
+  preview.className = 'card-due-preview ' + (nextMonth ? 'positive' : 'negative');
+  preview.textContent = nextMonth
+    ? `Vira dia ${card.dueDay}: essa compra cai em ${monthLabel(statementMonth)}.`
+    : `Vira dia ${card.dueDay}: essa compra ainda cai em ${monthLabel(month)}.`;
 }
 function openExpense() {
   editingTxId = null;
@@ -721,6 +1039,7 @@ function openExpense() {
   document.getElementById('f-parc-final').value='1';
   document.getElementById('f-month').value=currentMonth;
   fillCardOptions();
+  updateCardDuePreview();
   document.getElementById('tx-overlay').classList.add('open');
 }
 function openIncome() { openExpense(); setType('income'); }
@@ -741,7 +1060,8 @@ function openEditTx(id) {
   document.getElementById('f-value').value=tx.value;
   document.getElementById('f-parc-atual').value=tx.parcAtual || 1;
   document.getElementById('f-parc-final').value=tx.parcFinal || 1;
-  document.getElementById('f-month').value=tx.month;
+  document.getElementById('f-month').value=purchaseMonthFromStatement(tx.month, tx.card);
+  updateCardDuePreview();
   document.getElementById('tx-overlay').classList.add('open');
 }
 function closeTxForm() {
@@ -751,11 +1071,12 @@ function closeTxForm() {
 function saveTx() {
   const name = document.getElementById('f-name').value.trim();
   const value = parseFloat(document.getElementById('f-value').value);
-  const month = document.getElementById('f-month').value;
-  if(!name||!value||!month) { alert('Preencha todos os campos!'); return; }
+  const inputMonth = document.getElementById('f-month').value;
+  if(!name||!value||!inputMonth) { alert('Preencha todos os campos!'); return; }
   let txs = loadTx();
   const isFixo = currentType==='expense' && document.getElementById('btn-fixo').classList.contains('active');
   const card = currentType==='expense'?document.getElementById('f-card').value:null;
+  const month = currentType==='expense' ? statementMonthForCard(inputMonth, card) : inputMonth;
   const parcAtual = (!isFixo&&currentType==='expense')?parseInt(document.getElementById('f-parc-atual').value)||1:1;
   const parcFinal = (!isFixo&&currentType==='expense')?parseInt(document.getElementById('f-parc-final').value)||1:1;
   if(parcAtual > parcFinal) { alert('A parcela atual não pode ser maior que o total de parcelas.'); return; }
@@ -804,31 +1125,183 @@ function deleteTx(id) {
   }
   render();
 }
-function openCardForm() { document.getElementById('cf-name').value=''; document.getElementById('card-overlay').classList.add('open'); }
-function closeCardForm() { document.getElementById('card-overlay').classList.remove('open'); }
+function toggleCardDueField() {
+  const isCredit = document.getElementById('cf-kind').value==='credit';
+  document.getElementById('cf-due-group').style.display = isCredit ? 'block' : 'none';
+}
+function openCardForm() {
+  editingCardId = null;
+  document.getElementById('card-form-title').textContent='Novo método';
+  document.getElementById('card-save-btn').textContent='Salvar';
+  document.getElementById('cf-name').value='';
+  document.getElementById('cf-kind').value='credit';
+  document.getElementById('cf-due-day').value='';
+  document.getElementById('cf-color').value='#c044f0';
+  toggleCardDueField();
+  document.getElementById('card-overlay').classList.add('open');
+}
+function openEditCard(id) {
+  const card = loadCards().find(c=>c.id===id);
+  if(!card) return;
+  editingCardId = id;
+  document.getElementById('card-form-title').textContent='Editar método';
+  document.getElementById('card-save-btn').textContent='Atualizar';
+  document.getElementById('cf-name').value=card.name;
+  document.getElementById('cf-kind').value=card.kind || 'credit';
+  document.getElementById('cf-due-day').value=card.dueDay || '';
+  document.getElementById('cf-color').value=card.color || '#c044f0';
+  toggleCardDueField();
+  document.getElementById('card-overlay').classList.add('open');
+}
+function closeCardForm() {
+  editingCardId = null;
+  document.getElementById('card-overlay').classList.remove('open');
+}
 function saveCard() {
   const name = document.getElementById('cf-name').value.trim();
-  if(!name) return;
-  const cards = loadCards();
-  cards.push({ id:'card-'+Date.now(), name, color:document.getElementById('cf-color').value });
+  const kind = document.getElementById('cf-kind').value;
+  const dueDay = kind==='credit' ? parseInt(document.getElementById('cf-due-day').value) : null;
+  if(!name) { alert('Informe o nome do método.'); return; }
+  if(kind==='credit' && (!dueDay || dueDay < 1 || dueDay > 31)) { alert('Informe um dia de virada da fatura entre 1 e 31.'); return; }
+  let cards = loadCards();
+  const card = { id: editingCardId || 'card-'+Date.now(), name, kind, dueDay, color:document.getElementById('cf-color').value };
+  if(editingCardId) cards = cards.map(c=>c.id===editingCardId ? card : c);
+  else cards.push(card);
   saveCardsData(cards); closeCardForm(); render();
 }
 function deleteCard(id) {
   if(!confirm('Excluir este cartão?')) return;
   saveCardsData(loadCards().filter(c=>c.id!==id)); render();
 }
+function updateInvestmentFields() {
+  const kind = document.getElementById('if-kind').value;
+  const defaults = INVESTMENT_DEFAULTS[kind] || INVESTMENT_DEFAULTS.cdi;
+  const indexInput = document.getElementById('if-index');
+  const rateInput = document.getElementById('if-rate');
+  const indexLabel = document.getElementById('if-index-label');
+  const rateLabel = document.getElementById('if-rate-label');
+  const rateFields = document.getElementById('investment-rate-fields');
+  const manualCurrent = document.getElementById('investment-manual-current');
+  rateFields.style.display = kind==='manual' ? 'none' : 'grid';
+  manualCurrent.style.display = kind==='manual' ? 'block' : 'none';
+  if(kind==='cdi') {
+    indexLabel.textContent = '% do CDI';
+    rateLabel.textContent = 'CDI ao ano (%)';
+  } else if(kind==='selic') {
+    indexLabel.textContent = '% da Selic';
+    rateLabel.textContent = 'Selic ao ano (%)';
+  } else if(kind==='ipca') {
+    indexLabel.textContent = 'IPCA estimado (%)';
+    rateLabel.textContent = 'Taxa real ao ano (%)';
+  } else {
+    indexLabel.textContent = 'Indexador (%)';
+    rateLabel.textContent = 'Taxa ao ano (%)';
+  }
+  if(kind==='prefixado' || kind==='poupanca') indexInput.closest('.form-group').style.display = 'none';
+  else indexInput.closest('.form-group').style.display = 'block';
+  indexInput.value = defaults.index;
+  rateInput.value = defaults.rate;
+}
+function openInvestmentForm() {
+  editingInvestmentId = null;
+  document.getElementById('investment-form-title').textContent='Novo Investimento';
+  document.getElementById('investment-save-btn').textContent='Salvar';
+  document.getElementById('if-name').value='';
+  document.getElementById('if-kind').value='cdi';
+  document.getElementById('if-applied').value='';
+  document.getElementById('if-date').value=new Date().toISOString().slice(0,10);
+  updateInvestmentFields();
+  document.getElementById('if-current').value='';
+  document.getElementById('investment-overlay').classList.add('open');
+}
+function openEditInvestment(id) {
+  const inv = normalizeInvestment(loadInvestments().find(i=>i.id===id));
+  if(!inv) return;
+  editingInvestmentId = id;
+  document.getElementById('investment-form-title').textContent='Editar Investimento';
+  document.getElementById('investment-save-btn').textContent='Atualizar';
+  document.getElementById('if-name').value=inv.name;
+  document.getElementById('if-kind').value=inv.kind || 'manual';
+  document.getElementById('if-applied').value=inv.applied;
+  document.getElementById('if-date').value=inv.date || new Date().toISOString().slice(0,10);
+  updateInvestmentFields();
+  document.getElementById('if-index').value=inv.index ?? INVESTMENT_DEFAULTS[document.getElementById('if-kind').value].index;
+  document.getElementById('if-rate').value=inv.rate ?? INVESTMENT_DEFAULTS[document.getElementById('if-kind').value].rate;
+  document.getElementById('if-current').value=investmentCurrentValue(inv).toFixed(2);
+  document.getElementById('investment-overlay').classList.add('open');
+}
+function closeInvestmentForm() {
+  editingInvestmentId = null;
+  document.getElementById('investment-overlay').classList.remove('open');
+}
+function saveInvestment() {
+  const name = document.getElementById('if-name').value.trim();
+  const kind = document.getElementById('if-kind').value;
+  const applied = parseFloat(document.getElementById('if-applied').value);
+  const date = document.getElementById('if-date').value;
+  const index = parseFloat(document.getElementById('if-index').value) || 0;
+  const rate = parseFloat(document.getElementById('if-rate').value) || 0;
+  const current = kind==='manual' ? parseFloat(document.getElementById('if-current').value) : null;
+  if(!name || isNaN(applied) || (kind==='manual' && isNaN(current))) { alert('Preencha os campos principais do investimento.'); return; }
+  let investments = loadInvestments();
+  const item = { id: editingInvestmentId || Date.now(), name, kind, index, rate, applied, current: current ?? applied, date };
+  if(editingInvestmentId) investments = investments.map(i=>i.id===editingInvestmentId ? item : i);
+  else investments.push(item);
+  saveInvestmentsData(investments);
+  closeInvestmentForm();
+  render();
+}
+function deleteInvestment(id) {
+  if(!confirm('Excluir este investimento?')) return;
+  saveInvestmentsData(loadInvestments().filter(i=>i.id!==id));
+  render();
+}
+function setProjectionMonths(v) {
+  projectionMonths = Math.max(1, Math.min(36, parseInt(v)||6));
+  render();
+}
 function goHome() {
   document.getElementById('screen-home').classList.add('active');
   document.getElementById('screen-cards').classList.remove('active');
+  document.getElementById('screen-investments').classList.remove('active');
+  document.getElementById('screen-projection').classList.remove('active');
   document.getElementById('nav-home').classList.add('active');
   document.getElementById('nav-cards').classList.remove('active');
+  document.getElementById('nav-investments').classList.remove('active');
+  document.getElementById('nav-projection').classList.remove('active');
   document.getElementById('fab').style.display='flex';
 }
 function goCards() {
   document.getElementById('screen-cards').classList.add('active');
   document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-investments').classList.remove('active');
+  document.getElementById('screen-projection').classList.remove('active');
   document.getElementById('nav-cards').classList.add('active');
   document.getElementById('nav-home').classList.remove('active');
+  document.getElementById('nav-investments').classList.remove('active');
+  document.getElementById('nav-projection').classList.remove('active');
+  document.getElementById('fab').style.display='none';
+}
+function goInvestments() {
+  document.getElementById('screen-investments').classList.add('active');
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-cards').classList.remove('active');
+  document.getElementById('screen-projection').classList.remove('active');
+  document.getElementById('nav-investments').classList.add('active');
+  document.getElementById('nav-home').classList.remove('active');
+  document.getElementById('nav-cards').classList.remove('active');
+  document.getElementById('nav-projection').classList.remove('active');
+  document.getElementById('fab').style.display='none';
+}
+function goProjection() {
+  document.getElementById('screen-projection').classList.add('active');
+  document.getElementById('screen-home').classList.remove('active');
+  document.getElementById('screen-cards').classList.remove('active');
+  document.getElementById('screen-investments').classList.remove('active');
+  document.getElementById('nav-projection').classList.add('active');
+  document.getElementById('nav-home').classList.remove('active');
+  document.getElementById('nav-cards').classList.remove('active');
+  document.getElementById('nav-investments').classList.remove('active');
   document.getElementById('fab').style.display='none';
 }
 applyTheme(loadTheme());
