@@ -481,6 +481,15 @@ html, body {
         🔁 Este gasto vai aparecer automaticamente em todos os meses até você excluí-lo.
       </div>
     </div>
+    <div id="income-fields" style="display:none">
+      <div class="type-toggle" style="margin-bottom:14px">
+        <button class="type-btn active" id="btn-income-unico" onclick="setIncomeType('unico')">Única</button>
+        <button class="type-btn" id="btn-income-fixo" onclick="setIncomeType('fixo')">Fixa 🔁</button>
+      </div>
+      <div id="income-fixo-info" style="display:none;font-size:13px;color:var(--text2);background:var(--bg3);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px">
+        🔁 Esta entrada vai aparecer automaticamente em todos os meses até você excluí-la.
+      </div>
+    </div>
     <div class="form-group"><label>Mês</label><input id="f-month" type="month" onchange="updateCardDuePreview()" /></div>
     <button class="btn-primary" id="tx-save-btn" onclick="saveTx()">Salvar</button>
     <button class="btn-cancel" onclick="closeTxForm()">Cancelar</button>
@@ -915,7 +924,7 @@ function renderProjection(txs, cards) {
 function render() {
   const txs = loadTx(); const cards = loadCards();
   document.getElementById('month-label').textContent = monthLabel(currentMonth);
-  const fixoTxs = txs.filter(t=>t.fixo && t.type==='expense');
+  const fixoTxs = txs.filter(t=>t.fixo);
   const monthTxs = txs.filter(t=>t.month===currentMonth && !t.fixo);
   const fixoThisMonth = fixoTxs.filter(t => t.month <= currentMonth);
   const month = [...monthTxs, ...fixoThisMonth];
@@ -1018,6 +1027,7 @@ function setType(t) {
   document.getElementById('btn-exp').className = 'type-btn'+(t==='expense'?' active':'');
   document.getElementById('btn-inc').className = 'type-btn'+(t==='income'?' active':'');
   document.getElementById('expense-fields').style.display = t==='expense'?'block':'none';
+  document.getElementById('income-fields').style.display = t==='income'?'block':'none';
   updateCardDuePreview();
 }
 function setParcelType(t) {
@@ -1025,6 +1035,11 @@ function setParcelType(t) {
   document.getElementById('btn-fixo').className = 'type-btn'+(t==='fixo'?' active':'');
   document.getElementById('parcel-fields').style.display = t==='parcelado'?'grid':'none';
   document.getElementById('fixo-info').style.display = t==='fixo'?'block':'none';
+}
+function setIncomeType(t) {
+  document.getElementById('btn-income-unico').className = 'type-btn'+(t==='unico'?' active':'');
+  document.getElementById('btn-income-fixo').className = 'type-btn'+(t==='fixo'?' active':'');
+  document.getElementById('income-fixo-info').style.display = t==='fixo'?'block':'none';
 }
 function fillCardOptions(selectedId) {
   const cards = loadCards();
@@ -1067,6 +1082,7 @@ function openExpense() {
   document.getElementById('tx-save-btn').textContent='Salvar';
   setType('expense');
   setParcelType('parcelado');
+  setIncomeType('unico');
   document.getElementById('f-name').value='';
   document.getElementById('f-value').value='';
   document.getElementById('f-parc-atual').value='1';
@@ -1076,7 +1092,7 @@ function openExpense() {
   updateCardDuePreview();
   document.getElementById('tx-overlay').classList.add('open');
 }
-function openIncome() { openExpense(); setType('income'); }
+function openIncome() { openExpense(); setType('income'); setIncomeType('unico'); }
 function openEditTx(id) {
   const tx = loadTx().find(t=>t.id===id);
   if(!tx) return;
@@ -1089,6 +1105,7 @@ function openEditTx(id) {
     setParcelType(tx.fixo?'fixo':'parcelado');
   } else {
     fillCardOptions();
+    setIncomeType(tx.fixo?'fixo':'unico');
   }
   document.getElementById('f-name').value=tx.name;
   document.getElementById('f-value').value=tx.value;
@@ -1108,7 +1125,8 @@ function saveTx() {
   const inputMonth = document.getElementById('f-month').value;
   if(!name||!value||!inputMonth) { alert('Preencha todos os campos!'); return; }
   let txs = loadTx();
-  const isFixo = currentType==='expense' && document.getElementById('btn-fixo').classList.contains('active');
+  const isFixo = (currentType==='expense' && document.getElementById('btn-fixo').classList.contains('active')) ||
+    (currentType==='income' && document.getElementById('btn-income-fixo').classList.contains('active'));
   const card = currentType==='expense'?document.getElementById('f-card').value:null;
   const month = currentType==='expense' ? statementMonthForCard(inputMonth, card) : inputMonth;
   const parcAtual = (!isFixo&&currentType==='expense')?parseInt(document.getElementById('f-parc-atual').value)||1:1;
@@ -1151,7 +1169,7 @@ function deleteTx(id) {
     if(opts) { saveTxData(txs.filter(t=>t.groupId!==tx.groupId)); }
     else { saveTxData(txs.filter(t=>t.id!==id)); }
   } else if(tx.fixo) {
-    if(!confirm('Excluir este gasto fixo? Ele vai sumir de todos os meses.')) return;
+    if(!confirm('Excluir este lançamento fixo? Ele vai sumir de todos os meses.')) return;
     saveTxData(txs.filter(t=>t.id!==id));
   } else {
     if(!confirm('Excluir este lançamento?')) return;
