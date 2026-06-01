@@ -65,6 +65,23 @@ html, body {
   color: #fff;
   letter-spacing: 0.02em;
 }
+.privacy-btn {
+  width:36px; height:36px; border-radius:50%; border:0.5px solid var(--border2);
+  background:var(--bg3); color:var(--text2); display:flex; align-items:center;
+  justify-content:center; cursor:pointer; font-size:19px;
+}
+.privacy-btn.active { color:var(--text); box-shadow:0 0 0 1px rgba(var(--g1-rgb),0.35); }
+body.privacy-blur .stat-value,
+body.privacy-blur .card-total,
+body.privacy-blur .card-detail-value,
+body.privacy-blur .tx-amount,
+body.privacy-blur .investment-current,
+body.privacy-blur .investment-yield,
+body.privacy-blur .projection-total,
+body.privacy-blur .projection-chip strong {
+  filter: blur(6px);
+  user-select:none;
+}
 
 /* MONTH NAV */
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 22px; }
@@ -380,9 +397,12 @@ html, body {
         <button class="hamburger-btn" onclick="openMenu()"><i class="ti ti-menu-2"></i></button>
         <h1><span class="grad-text">Finanças</span></h1>
       </div>
-      <button class="income-btn" onclick="openIncome()">
-        <i class="ti ti-plus" style="font-size:15px"></i> Entrada
-      </button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="privacy-btn" id="privacy-btn" onclick="togglePrivacyBlur()" aria-label="Ocultar valores"><i class="ti ti-eye"></i></button>
+        <button class="income-btn" onclick="openIncome()">
+          <i class="ti ti-plus" style="font-size:15px"></i> Entrada
+        </button>
+      </div>
     </div>
     <div class="month-nav">
       <button onclick="changeMonth(-1)"><i class="ti ti-chevron-left"></i></button>
@@ -758,9 +778,24 @@ let editingCardId = null;
 let projectionMonths = 6;
 let expandedCardId = null;
 let txListCollapsed = false;
+let privacyBlur = localStorage.getItem('fin_privacy_blur') === '1';
 
 function fmt(v) {
   return 'R$ ' + Math.abs(v).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function applyPrivacyBlur() {
+  document.body.classList.toggle('privacy-blur', privacyBlur);
+  const btn = document.getElementById('privacy-btn');
+  if(btn) {
+    btn.className = 'privacy-btn' + (privacyBlur ? ' active' : '');
+    btn.innerHTML = `<i class="ti ${privacyBlur ? 'ti-eye-off' : 'ti-eye'}"></i>`;
+    btn.setAttribute('aria-label', privacyBlur ? 'Mostrar valores' : 'Ocultar valores');
+  }
+}
+function togglePrivacyBlur() {
+  privacyBlur = !privacyBlur;
+  localStorage.setItem('fin_privacy_blur', privacyBlur ? '1' : '0');
+  applyPrivacyBlur();
 }
 function monthLabel(k) {
   const [y,m] = k.split('-');
@@ -1357,6 +1392,7 @@ function goProjection() {
   document.getElementById('fab').style.display='none';
 }
 applyTheme(loadTheme());
+applyPrivacyBlur();
 render();
 </script>
 </body>
