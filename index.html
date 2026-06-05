@@ -811,10 +811,8 @@ function statementMonthForCard(monthKey, cardId) {
   if(!card || card.kind!=='credit' || !card.dueDay) return monthKey;
   const today = new Date();
   const inputMonth = monthKey || currentMonth;
-  const [y,m] = inputMonth.split('-').map(Number);
-  const turnDate = card.dueDay===1 ? new Date(y, m, 1) : new Date(y, m-1, card.dueDay);
-  const purchaseDate = today.toISOString().slice(0,7)===inputMonth ? today : new Date(y, m-1, 1);
-  return purchaseDate >= turnDate ? addMonths(inputMonth, 1) : inputMonth;
+  const purchaseDay = today.toISOString().slice(0,7)===inputMonth ? today.getDate() : 1;
+  return purchaseDay >= card.dueDay ? addMonths(inputMonth, 1) : inputMonth;
 }
 function purchaseMonthFromStatement(monthKey, cardId) {
   const card = loadCards().find(c=>c.id===cardId);
